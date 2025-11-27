@@ -1,0 +1,20 @@
+# Generated files
+output/
+*.mp4
+
+# Config files (keep example only)
+config.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
