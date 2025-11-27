@@ -18,34 +18,36 @@ simulator:
 
 # Camera Configurations
 # Each camera represents a video source with specific recording patterns
-cameras:
-  # Example 1: Continuous Recording (e.g., Security Camera)
-  # Records back-to-back videos of fixed length
-  - name: "SecurityGate1"
+  # Example 1: Hikvision Style (NAS/NVR)
+  # Structure: output/Cam1/20251127/ch01_20251127_100000_Main.mp4
+  - name: "Hikvision_Cam01"
     source_video: "source_videos/gate.mp4"
-    output_folder: "output/SecurityGate1"
+    output_folder: "output/Hikvision_Cam01"
     pattern: "continuous"
+    naming_template: "ch{channel}_{date}_{time}_{type}.mp4"
+    directory_structure: "{date}/"
     config:
-      video_duration_range: [15, 15]  # Fixed 15 minutes
-      use_real_time: true             # Wait for actual time to pass
-
-  # Example 2: Motion Triggered (e.g., Warehouse Aisle)
-  # Records only when motion is detected (simulated)
-  - name: "WarehouseAisle3"
-    source_video: "source_videos/aisle.mp4"
-    output_folder: "output/WarehouseAisle3"
-    pattern: "motion_triggered"
-    config:
-      video_duration_range: [2, 10]   # 2-10 minutes recording
-      idle_duration_range: [10, 60]   # 10-60 minutes idle
+      video_duration_range: [10, 10]
       use_real_time: true
 
-  # Example 3: Fast Test (Batch Processing)
-  # Generates files immediately without waiting
-  - name: "TestCam_Fast"
-    source_video: "source_videos/test.mp4"
-    output_folder: "output/TestCam_Fast"
-    pattern: "continuous"
+  # Example 2: Dahua Style
+  # Structure: output/Cam2/2025-11-27/002/10.00.00.mp4
+  - name: "Dahua_Cam02"
+    source_video: "source_videos/aisle.mp4"
+    output_folder: "output/Dahua_Cam02"
+    pattern: "motion_triggered"
+    naming_template: "{time}.mp4"
+    directory_structure: "{date}/{channel}/"
     config:
-      video_duration_range: [5, 5]
-      use_real_time: false            # Generate as fast as possible
+      video_duration_range: [2, 10]
+      idle_duration_range: [10, 60]
+      use_real_time: true
+
+  # Example 3: Imou/Ezviz (Export Style)
+  # Structure: output/Cam3/20251127/100000.mp4
+  - name: "Imou_Cam03"
+    source_video: "source_videos/test.mp4"
+    output_folder: "output/Imou_Cam03"
+    pattern: "continuous"
+    naming_template: "{time}.mp4"
+    directory_structure: "{date}/"

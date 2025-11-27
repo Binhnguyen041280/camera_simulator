@@ -71,10 +71,62 @@ class CameraSimulator:
                         time.sleep(wait_seconds)
             
             # Generate filename
-            # Format: CameraName_YYYYMMDD_HHMMSS.mp4
-            timestamp_str = event.start_time.strftime("%Y%m%d_%H%M%S")
-            filename = f"{self.name}_{timestamp_str}.mp4"
-            output_path = os.path.join(self.output_folder, filename)
+            # Generate filename using template
+            # Available variables:
+            # {name}: Camera name
+            # {channel}: Channel ID (extracted from name or default)
+            # {date}: YYYYMMDD or YYYY-MM-DD
+            # {time}: HHMMSS or HH.MM.SS
+            # {timestamp}: YYYYMMDD_HHMMSS
+            # {type}: Recording type (Main/Sub/Event)
+            
+            template = self.config.get('naming_template', '{name}_{timestamp}.mp4')
+            dir_template = self.config.get('directory_structure', '')
+            
+            # Prepare variables
+            now = event.start_time
+            channel_id = ''.join(filter(str.isdigit, self.name)) or "01"
+            channel_id = f"{int(channel_id):02d}" # Ensure 2 digits
+            
+            vars = {
+                'name': self.name,
+                'channel': channel_id,
+                'date': now.strftime("%Y%m%d"),
+                'time': now.strftime("%H%M%S"),
+                'timestamp': now.strftime("%Y%m%d_%H%M%S"),
+                'type': 'Main'
+            }
+            
+            # Special handling for different formats if needed
+            if '/' in template or '-' in template:
+                # If template expects different date format, we might need more logic
+                # But for now, let's stick to basic replacements
+                pass
+                
+            # Render templates
+            try:
+                # Support simple date formatting in template like {date:%Y-%m-%d} is hard with simple format
+                # So we provide pre-formatted vars. 
+                # For Dahua: {date} might need to be YYYY-MM-DD. 
+                # Let's check the profile and adjust vars if needed.
+                profile = self.config.get('profile', 'generic')
+                if profile == 'dahua':
+                    vars['date'] = now.strftime("%Y-%m-%d")
+                    vars['time'] = now.strftime("%H.%M.%S")
+                elif profile == 'imou' or profile == 'tapo':
+                    vars['date'] = now.strftime("%Y%m%d")
+                    
+                filename = template.format(**vars)
+                subdir = dir_template.format(**vars)
+            except KeyError as e:
+                logger.error(f"[{self.name}] Invalid template key: {e}")
+                filename = f"{self.name}_{vars['timestamp']}.mp4"
+                subdir = ""
+
+            # Create full path
+            full_output_folder = os.path.join(self.output_folder, subdir)
+            os.makedirs(full_output_folder, exist_ok=True)
+            output_path = os.path.join(full_output_folder, filename)
             
             logger.info(f"[{self.name}] Creating video: {filename} ({event.duration_minutes:.1f}m)")
             
